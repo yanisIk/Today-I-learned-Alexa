@@ -258,6 +258,9 @@ async function getNeverReadTIL(handlerInput) {
         }
     }
 
+    // In case all are already read
+    if (!til) tilFrontPageFeed[Math.floor(Math.random() * tilFrontPageFeed.length)];
+
     userData.readMessages[til.id] = true;
     handlerInput.attributesManager.setPersistentAttributes(userData);
     await handlerInput.attributesManager.savePersistentAttributes();
