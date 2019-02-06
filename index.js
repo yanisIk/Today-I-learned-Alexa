@@ -54,7 +54,7 @@ const ReadOnePostHandler = {
         return handlerInput.responseBuilder
             .speak(speechText)
             .reprompt(repromptText)
-            .withStandardCard('Today I learned', `${til.message} \n Source: ${til.sourceUrl}`, til.thumbnail)
+            .withStandardCard('Today I learned', `${til.message} \n\n Source: ${til.sourceUrl}`, til.thumbnail)
             .getResponse();
     }
 };
@@ -100,7 +100,7 @@ const ReadAnotherPostHandler = {
         return handlerInput.responseBuilder
             .speak(speechText)
             .reprompt(repromptText)
-            .withStandardCard('Today I learned', `${til.message} \n Source: ${til.sourceUrl}`, til.thumbnail)
+            .withStandardCard('Today I learned', `${til.message} \n\n Source: ${til.sourceUrl}`, til.thumbnail)
             .getResponse();
     }
 };
@@ -198,30 +198,30 @@ const ErrorHandler = {
 
 let skill;
 exports.handler = async (event, context) => {
-// Make sure to add this so you can re-use `conn` between function calls.
-// See https://www.mongodb.com/blog/post/serverless-development-with-nodejs-aws-lambda-mongodb-atlas
-context.callbackWaitsForEmptyEventLoop = false;
+    // Make sure to add this so you can re-use `conn` between function calls.
+    // See https://www.mongodb.com/blog/post/serverless-development-with-nodejs-aws-lambda-mongodb-atlas
+    context.callbackWaitsForEmptyEventLoop = false;
 
-if (!skill) {
-    skill = Alexa.SkillBuilders.custom()
-    .withPersistenceAdapter(new persistenceAdapter.S3PersistenceAdapter({bucketName: process.env.S3_PERSISTENCE_BUCKET}))
-    .addRequestHandlers(
-        LaunchRequestHandler,
-        ReadOnePostHandler,
-        ReadAnotherPostHandler,
-        DoNotReadAnotherPostHandler,
-        HelpIntentHandler,
-        CancelAndStopIntentHandler,
-        SessionEndedRequestHandler,
-        IntentReflectorHandler) // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
-    .addErrorHandlers(
-        ErrorHandler)
-    .create();
-}
+    if (!skill) {
+        skill = Alexa.SkillBuilders.custom()
+        .withPersistenceAdapter(new persistenceAdapter.S3PersistenceAdapter({bucketName: process.env.S3_PERSISTENCE_BUCKET}))
+        .addRequestHandlers(
+            LaunchRequestHandler,
+            ReadOnePostHandler,
+            ReadAnotherPostHandler,
+            DoNotReadAnotherPostHandler,
+            HelpIntentHandler,
+            CancelAndStopIntentHandler,
+            SessionEndedRequestHandler,
+            IntentReflectorHandler) // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
+        .addErrorHandlers(
+            ErrorHandler)
+        .create();
+    }
 
-const response = await skill.invoke(event, context);
+    const response = await skill.invoke(event, context);
 
-return response;
+    return response;
 };
 
 
@@ -247,7 +247,8 @@ async function getNeverReadTIL(handlerInput) {
         });
     }
 
-    let til;
+    // Use a random story In case all are already read
+    let til = tilFrontPageFeed[Math.floor(Math.random() * tilFrontPageFeed.length)];
     const userData = (await handlerInput.attributesManager.getPersistentAttributes()) || {};
     if (!userData.readMessages) userData.readMessages = {};
     
@@ -257,9 +258,6 @@ async function getNeverReadTIL(handlerInput) {
             break;
         }
     }
-
-    // In case all are already read
-    if (!til) tilFrontPageFeed[Math.floor(Math.random() * tilFrontPageFeed.length)];
 
     userData.readMessages[til.id] = true;
     handlerInput.attributesManager.setPersistentAttributes(userData);
