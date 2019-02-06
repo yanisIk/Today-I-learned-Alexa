@@ -1,0 +1,26 @@
+{
+  "name": "today-i-learned-alexa",
+  "version": "1.0.0",
+  "description": "Alexa Skill that reads TIL subbredit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanisIk/Today-I-learned-Alexa.git"
+  },
+  "author": "Yanis Ikene",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yanisIk/Today-I-learned-Alexa/issues"
+  },
+  "homepage": "https://github.com/yanisIk/Today-I-learned-Alexa#readme",
+  "dependencies": {
+    "ask-sdk-s3-persistence-adapter": "^2.3.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "ask-sdk": "^2.3.0",
+    "aws-sdk": "^2.326.0"
+  }
+}
