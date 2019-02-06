@@ -54,7 +54,7 @@ const ReadOnePostHandler = {
         return handlerInput.responseBuilder
             .speak(speechText)
             .reprompt(repromptText)
-            .withStandardCard('Today I learned', til.message, til.thumbnail)
+            .withStandardCard('Today I learned', `${til.message} \n Source: ${til.sourceUrl}`, til.thumbnail)
             .getResponse();
     }
 };
@@ -100,7 +100,7 @@ const ReadAnotherPostHandler = {
         return handlerInput.responseBuilder
             .speak(speechText)
             .reprompt(repromptText)
-            .withStandardCard('Today I learned', til.message, til.thumbnail)
+            .withStandardCard('Today I learned', `${til.message} \n Source: ${til.sourceUrl}`, til.thumbnail)
             .getResponse();
     }
 };
@@ -146,7 +146,7 @@ const CancelAndStopIntentHandler = {
                 || handlerInput.requestEnvelope.request.intent.name === 'AMAZON.StopIntent');
     },
     handle(handlerInput) {
-        const speechText = `I think tt's time to go brag to your friends about what you just learned. Goodbye !`;
+        const speechText = `I think it's time to go brag to your friends about what you just learned. Goodbye !`;
         return handlerInput.responseBuilder
             .speak(speechText)
             .getResponse();
@@ -225,10 +225,11 @@ return response;
 };
 
 
-let factsList = [];
-async function getRandomTIL() {
-    if (factsList.length === 0) {
-        factsList = (await request.get({
+let tilFrontPageFeed = [];
+async function getNeverReadTIL(handlerInput) {
+
+    if (tilFrontPageFeed.length === 0) {
+        tilFrontPageFeed = (await request.get({
             url:'https://www.reddit.com/r/todayilearned.json',
             json: true
         })).data.children
@@ -246,20 +247,17 @@ async function getRandomTIL() {
         });
     }
 
-    let randomFact = factsList[Math.floor(Math.random() * factsList.length)];
-
-    return randomFact;
-}
-
-async function getNeverReadTIL(handlerInput) {
-    let til = await getRandomTIL();
+    let til;
     const userData = (await handlerInput.attributesManager.getPersistentAttributes()) || {};
     if (!userData.readMessages) userData.readMessages = {};
-    let alreadyRead = userData.readMessages[til.id] ? true : false;
-    while (alreadyRead !== false) {
-        til = await getRandomTIL();
-        alreadyRead = userData.readMessages[til.id] ? true : false;
+    
+    for (let story of tilFrontPageFeed) {
+        if (!userData.readMessages[story.id]) {
+            til = story;
+            break;
+        }
     }
+
     userData.readMessages[til.id] = true;
     handlerInput.attributesManager.setPersistentAttributes(userData);
     await handlerInput.attributesManager.savePersistentAttributes();
